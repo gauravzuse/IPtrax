@@ -6,6 +6,6 @@ package com.realvjy.util;
  */
 public class DomainValidate {
     public static String validate(String domain){
-        return domain.replaceAll("(https|http).(:*).(\\\\*)","");
+        return domain.replaceAll("(https|http).(:*).(/*)","");
     }
 }
