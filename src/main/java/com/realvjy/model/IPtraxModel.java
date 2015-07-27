@@ -29,7 +29,9 @@ public class IPtraxModel {
         JSONObject jsonObject = null;
         try {
             jsonObject = JSONParser.parse(jUrl);
-            if (jsonObject.getString("status").equals("success")) {
+            String status = jsonObject.getString("status");
+            iPinfoModel.setStatus(status);
+            if (status.equals("success")) {
                 iPinfoModel.setStatus(jsonObject.get("status").toString());
                 iPinfoModel.setCountry(jsonObject.get("country").toString());
                 iPinfoModel.setCountryCode(jsonObject.get("countryCode").toString());
@@ -43,8 +45,8 @@ public class IPtraxModel {
                 iPinfoModel.setIsp(jsonObject.get("isp").toString());
                 iPinfoModel.setOrganization(jsonObject.get("org").toString());
                 iPinfoModel.setAsNameNo(jsonObject.get("as").toString());
-            } else {
-                iPinfoModel.setMsg(jsonObject.get("query").toString());
+            } else {;
+                iPinfoModel.setMsg(jsonObject.get("message").toString());
             }
         } catch (Exception ignored) {}
     }

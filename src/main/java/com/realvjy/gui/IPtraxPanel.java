@@ -1,8 +1,13 @@
 package com.realvjy.gui;
 
 import com.realvjy.model.IPtraxModel;
+import com.realvjy.util.DomainToIP;
+import com.realvjy.util.DomainValidate;
+import com.realvjy.util.IPcheck;
+import com.realvjy.util.TestConnection;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
@@ -21,6 +26,7 @@ public class IPtraxPanel extends JPanel {
     private GridBagLayout inputLayout, outputLayout;
     private BorderLayout panelLayout;
     private GridBagConstraints inputGbc, outputGbc;
+    private JLabel sName;
     IPtraxModel iPtraxModel;
 
     public IPtraxPanel() {
@@ -30,9 +36,9 @@ public class IPtraxPanel extends JPanel {
 
     private void initilizeComponent() {
         iPtraxModel = new IPtraxModel();
-        Font font = new Font("Segoe UI",Font.PLAIN,14);
+        Font font = new Font("Segoe UI",Font.PLAIN,16);
         setFont(font);
-        conInfoLabel = new JLabel("Connection:");
+        conInfoLabel = new JLabel("Your Public IP: "+TestConnection.isOnline());
         ipLabel = new JLabel("IP Address:");
         domainLabel = new JLabel("Domain:");
         countryLabel = new JLabel("Country:");
@@ -50,20 +56,20 @@ public class IPtraxPanel extends JPanel {
         statusLabel = new JLabel("Status:");
         msgLabel = new JLabel("");
 
-        ipText =new JTextField("0.0.0.0",20);
+        ipText =new JTextField("",20);
         domainText= new JTextField("",20);
-        countryText = new JTextField("Country",20);
-        countryCodeText = new JTextField("Country Code",20);
-        regionNameText = new JTextField("Region",20);
-        regionText = new JTextField("Region Code",20);
-        cityText = new JTextField("City",20);
-        zipText = new JTextField("0000000",20);
-        latText = new JTextField("00.0000",20);
-        lonText = new JTextField("00.0000",20);
-        tZoneText = new JTextField("Time Zone",20);
-        ispText = new JTextField("ISP Name",20);
-        orgText = new JTextField("Organization",20);
-        asNameText = new JTextField("AS Number/Name",20);
+        countryText = new JTextField("",20);
+        countryCodeText = new JTextField("",20);
+        regionNameText = new JTextField("",20);
+        regionText = new JTextField("",20);
+        cityText = new JTextField("",20);
+        zipText = new JTextField("",20);
+        latText = new JTextField("",20);
+        lonText = new JTextField("",20);
+        tZoneText = new JTextField("",20);
+        ispText = new JTextField("",20);
+        orgText = new JTextField("",20);
+        asNameText = new JTextField("",20);
         statusText = new JTextField("",20);
         msgText = new JTextField("",20);
         searchText = new JTextField("Search by IP/domain",20);
@@ -71,6 +77,9 @@ public class IPtraxPanel extends JPanel {
         radioBtnGr = new ButtonGroup();
         ipRadio = new JRadioButton("IP");
         urlRadio = new JRadioButton("URL");
+        sName = new JLabel("IPtrax 0.0.1 by realvjy");
+        sName.setForeground(new Color(116, 116, 113));
+        sName.setFont(new Font("Arial",Font.ITALIC,12));
         inputLayout = new GridBagLayout();
         outputLayout = new GridBagLayout();
         panelLayout= new BorderLayout();
@@ -80,10 +89,20 @@ public class IPtraxPanel extends JPanel {
         outputPanel = new JPanel(outputLayout);
         radioBtnGr.add(ipRadio);
         radioBtnGr.add(urlRadio);
+
+        /*Add Listener to buttons*/
+        IPtraxListener iPtraxListener = new IPtraxListener(this);
+        searchBtn.addActionListener(iPtraxListener);
+        ipRadio.addActionListener(iPtraxListener);
+        urlRadio.addActionListener(iPtraxListener);
     }
 
     private void addLayout(){
         this.setLayout(panelLayout);
+        this.setBorder(new EmptyBorder(20, 20, 20, 20));
+       /* this.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10), // outer
+                // border
+                BorderFactory.createLoweredBevelBorder()));*/
         inputGbc.gridx = 0;
         inputGbc.gridy = 0;
         inputGbc.gridwidth = 2;
@@ -171,10 +190,71 @@ public class IPtraxPanel extends JPanel {
         outputPanel.add(asNameLabel,outputGbc);
         outputGbc.gridx = 1;
         outputPanel.add(asNameText,outputGbc);
-        outputGbc.gridx = 0;
-        outputGbc.gridy = 0;
+        outputGbc.gridy = 13;
+        outputGbc.gridwidth = 2;
+        outputPanel.add(sName,outputGbc);
         this.add(inputPanel,BorderLayout.NORTH);
-        outputGbc.gridy = 1;
         this.add(outputPanel,BorderLayout.CENTER);
+    }
+
+    public void getInfo(int i){
+        String searchTxt = searchText.getText();
+        String ip = "";
+        if (i == 12){
+            searchTxt = DomainValidate.validate(searchTxt);
+            ip = DomainToIP.convert(searchTxt);
+            iPtraxModel.setIpToInfoModel(ip);
+            iPtraxModel.setInfo();
+            showInfo();
+        } else {
+            IPcheck chk = new IPcheck(searchTxt);
+            ip = chk.validate();
+            iPtraxModel.setIpToInfoModel(ip);
+            iPtraxModel.setInfo();
+            showInfo();
+        }
+    }
+
+    public void showInfo(){
+        conInfoLabel = new JLabel("Your Public IP: "+TestConnection.isOnline());
+        if (iPtraxModel.getiPinfoModel().getiP().equals("0.0.0.0") || iPtraxModel.getiPinfoModel().getiP().equals("Unknown")){
+            clearTextField();
+            JOptionPane.showMessageDialog(null, "Invalid URL/IP", "ERROR", JOptionPane.ERROR_MESSAGE);
+        } else {
+            if (iPtraxModel.getiPinfoModel().getStatus().equals("success")) {
+                System.out.println(iPtraxModel.getiPinfoModel().getStatus());
+                ipText.setText(iPtraxModel.getiPinfoModel().getiP());
+                countryText.setText(iPtraxModel.getiPinfoModel().getCountry());
+                countryCodeText.setText(iPtraxModel.getiPinfoModel().getCountryCode());
+                regionNameText.setText(iPtraxModel.getiPinfoModel().getRegionName());
+                regionText.setText(iPtraxModel.getiPinfoModel().getRegion());
+                cityText.setText(iPtraxModel.getiPinfoModel().getCity());
+                zipText.setText(iPtraxModel.getiPinfoModel().getZipCode());
+                latText.setText(iPtraxModel.getiPinfoModel().getLatitude());
+                lonText.setText(iPtraxModel.getiPinfoModel().getLongitude());
+                tZoneText.setText(iPtraxModel.getiPinfoModel().getTimeZone());
+                ispText.setText(iPtraxModel.getiPinfoModel().getIsp());
+                orgText.setText(iPtraxModel.getiPinfoModel().getOrganization());
+                asNameText.setText(iPtraxModel.getiPinfoModel().getAsNameNo());
+            }
+            if (iPtraxModel.getiPinfoModel().getStatus().equals("fail")){
+                JOptionPane.showMessageDialog(null, iPtraxModel.getiPinfoModel().getMsg(), "ERROR", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+    public void clearTextField(){
+        ipText.setText("");
+        countryText.setText("");
+        countryCodeText.setText("");
+        regionNameText.setText("");
+        regionText.setText("");
+        cityText.setText("");
+        zipText.setText("");
+        latText.setText("");
+        lonText.setText("");
+        tZoneText.setText("");
+        ispText.setText("");
+        orgText.setText("");
+        asNameText.setText("");
     }
 }
